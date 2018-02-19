@@ -1,7 +1,7 @@
 ## SI 364 - Winter 2018
 ## HW 3
 
-##Worked with: Chalse Okorom and Chalse Gomez 
+##Worked with: Chalse Okorom and Amanda Gomez 
 
 ####################
 ## Import statements
@@ -63,7 +63,7 @@ class Tweet(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
 
     def __repr__(self):
-        return " {0} (ID:{1}) ".format(self.text,self.id)
+        return "{0} (ID:{1})".format(self.text,self.id)
 
 # - User
 ## -- id (Integer, Primary Key)
@@ -74,7 +74,7 @@ class Tweet(db.Model):
 class User(db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(124))
+    username = db.Column(db.String(64))
     display_name = db.Column(db.String(124))
     tweets = db.relationship('Tweet',backref = 'User') #this shows relationship between the tweets and users 
 
@@ -167,7 +167,7 @@ def index():
     if form.validate_on_submit():
         user_name = form.username.data
         txt = form.text.data
-        displayname =  form.display_name.data
+        displayname = form.display_name.data
 
         # Find out if there's already a user with the entered username
         # If there is, save it in a variable: user
@@ -186,13 +186,13 @@ def index():
         # Then flash a message about the tweet already existing
         # And redirect to the list of all tweets
 
-        t = Tweet.query.filter_by(text = txt, user_id=user_name).first()
+        t = Tweet.query.filter_by(text = txt, user_id=u.id).first()
         if t:
             flash("Tweet exists")
             return redirect(url_for("see_all_tweets"))
 
         else:
-            t = Tweet(text = txt, user_id=u.user_id)
+            t = Tweet(text = txt, user_id=u.id)
             db.session.add(t)
             db.session.commit()
             flash("tweet added successfully")
@@ -253,14 +253,14 @@ def see_all_users():
 # may be useful for this problem!
 
 @app.route('/longest_tweet')
-def see_longest_tweet():
+def longest_tweet():
     all_tweets = Tweet.query.all()
     tweet=[]
     for i in all_tweets:
         tweet.append([i, len(i.text.replace(" ",""))])
     tweet.sort(key=lambda i: (i[1],i[0].text),reverse=True)
-    user= User.query.filter_by( id = tweet[0][0].user_id.first())
-    return render_template('get_longest_tweet.html',tweet=tweet[0][0].text,username=user.username,display_name=user.display_name)
+    user= User.query.filter_by(id = tweet[0][0].user_id.first())
+    return render_template('longest_tweet.html',tweet=tweet[0][0].text,username=user.username,display_name=user.display_name)
 
 
 if __name__ == '__main__':
